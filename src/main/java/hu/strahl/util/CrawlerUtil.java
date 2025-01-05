@@ -2,8 +2,10 @@ package hu.strahl.util;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,9 +20,7 @@ public class CrawlerUtil {
     private static void initRequestHeaders() {
         requestHeaders = new HashMap<>();
         requestHeaders.put("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8");
-       // requestHeaders.put("Accept-Encoding", "gzip, deflate, br");
         requestHeaders.put("Accept-Language", "hu-HU,hu;q=0.8,en-US;q=0.5,en;q=0.3");
-       // requestHeaders.put("Host", "www.ebay.com"); // ONLY FOR EBAY!
         requestHeaders.put("User-Agent", "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0");
     }
 
@@ -28,20 +28,29 @@ public class CrawlerUtil {
         return (int) Math.round(Math.random() * max);
     }
 
-    public static String readWebpage(String urlString) {
-        StringBuilder builder = new StringBuilder();
+    public static InputStream readWebpageInputStream(String urlString) throws IOException {
         initRequestHeaders();
-        try {
-            @SuppressWarnings("deprecation")
-            URL url = new URL(urlString);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            requestHeaders.forEach(conn::setRequestProperty);
 
-            int status = conn.getResponseCode();
-            System.out.printf("%s Connection status: %d - %s\n", urlString, status, conn.getResponseMessage());
-            if (status == 200) { // OK
-                BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        @SuppressWarnings("deprecation")
+        URL url = new URL(urlString);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+        requestHeaders.forEach(conn::setRequestProperty);
+
+        int status = conn.getResponseCode();
+        System.out.printf("%s Connection status: %d - %s\n", urlString, status, conn.getResponseMessage());
+
+        return conn.getInputStream();
+    }
+
+    public static String readWebpage(String urlString)  {
+        StringBuilder builder = new StringBuilder();
+        InputStream inputStream;
+
+        try {
+            inputStream = readWebpageInputStream(urlString);
+            if (inputStream != null ) { // OK
+                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
                 String inputLine = reader.readLine();
                 while (inputLine != null) {
                     builder.append(inputLine);
@@ -51,6 +60,7 @@ public class CrawlerUtil {
         } catch (RuntimeException | IOException e) {
             throw new RuntimeException(e);
         }
+
         return builder.toString();
     }
 
