@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Kezdőlap</title>
+</head>
+<body>
+    <h1>Ajándékötletek bárkinek</h1>
+    <p>Fogalmad sincs, hogy mit ajándékozz egy sosem látott rokonnak?</p>
+    <button>Kattints a gombra!</button>
+    <p th:text="${giftName}">Ajándék neve</p>
+    <p th:text="${giftPrice}">1000 Ft</p>
+    <img th:src="${giftImg}" alt="Gift photo" />
+</body>
+</html>
